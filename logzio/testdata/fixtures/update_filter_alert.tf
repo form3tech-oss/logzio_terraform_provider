@@ -1,5 +1,5 @@
 resource "logzio_alert" "%s" {
-  title = "updated_alert"
+  title = "hello"
   query_string = "loglevel:ERROR"
   operation = "GREATER_THAN"
   filter = "{\"bool\":{\"must\":   [],  \"filter\":[],   \"should\":[], \"must_not\":[]}}"

@@ -52,7 +52,7 @@ func TestAccLogzioAlert_UpdateAlert(t *testing.T) {
 	})
 }
 
-func TestAccLogzioAlert_UpdateFilterWhiteSpace(t *testing.T) {
+func TestAccLogzioAlert_UpdateFilterWithOrderingDifference(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
@@ -61,14 +61,14 @@ func TestAccLogzioAlert_UpdateFilterWhiteSpace(t *testing.T) {
 				Config: resourceCreateAlert("test_update_filter_alert"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"logzio_alert.test_update_alert", "title", "hello"),
+						"logzio_alert.test_update_filter_alert", "filter", "{\"bool\":{\"must\":[],\"should\":[],\"filter\":[],\"must_not\":[]}}"),
 				),
 			},
 			resource.TestStep{
 				Config: resourceUpdateFilterAlert("test_update_filter_alert"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
-						"logzio_alert.test_update_alert", "filter", "{\"bool\":{\"must\":[],\"filter\":[],\"should\":[],\"must_not\":[]}}"),
+						"logzio_alert.test_update_filter_alert", "filter", "{\"bool\":{\"must\":[],\"should\":[],\"filter\":[],\"must_not\":[]}}"),
 				),
 			},
 		},

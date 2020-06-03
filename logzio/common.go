@@ -1,6 +1,8 @@
 package logzio
 
 import (
+	"encoding/json"
+	"reflect"
 	"strings"
 	"unicode"
 )
@@ -30,4 +32,24 @@ func stripAllWhitespace(inputString string) string {
 		}
 	}
 	return b.String()
+}
+
+func jsonEqual(old, new string) bool {
+	if old == new {
+		return true
+	}
+
+	var expected, actual interface{}
+	oldString := stripAllWhitespace(old)
+	newString := stripAllWhitespace(new)
+
+	if err := json.Unmarshal([]byte(oldString), &expected); err != nil {
+		return oldString == newString
+	}
+
+	if err := json.Unmarshal([]byte(newString), &actual); err != nil {
+		return false
+	}
+
+	return reflect.DeepEqual(expected, actual)
 }

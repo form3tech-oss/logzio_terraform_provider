@@ -55,3 +55,45 @@ lines`
 
 	assert.EqualValues(t, expected, stripAllWhitespace(input))
 }
+
+func TestDiffJsonReturnsTrueWhenStructurallyTheSame(t *testing.T) {
+	old := "{\"a\":{\"c\": []}, \"b\": true}"
+	new := "{\"b\": true, \"a\":{\"c\": []}}"
+
+	assert.True(t, jsonEqual(old, new))
+}
+
+func TestDiffJsonReturnsNotEqualWhenJsonIsDifferent(t *testing.T) {
+	old := "{\"a\":{\"c\": []}, \"b\": true}"
+	new := "{\"b\": true, \"a\":{\"d\": []}}"
+
+	assert.False(t, jsonEqual(old, new))
+}
+
+func TestDiffJsonReturnsTrueWhenStringsTheSameAndJson(t *testing.T) {
+	old := "{}"
+	new := "{}"
+
+	assert.True(t, jsonEqual(old, new))
+}
+
+func TestDiffJsonReturnsTrueWhenStringsTheSameButNotJson(t *testing.T) {
+	old := "{a"
+	new := "{a"
+
+	assert.True(t, jsonEqual(old, new))
+}
+
+func TestDiffJsonReturnsTrueWithExcessWhiteSpace(t *testing.T) {
+	old := "{\"a\":{\"c\": []}, \"b\": true}"
+	new := "{\"b\": true, \"a\":{\"c\": []}}"
+
+	assert.True(t, jsonEqual(old, new))
+}
+
+func TestDiffJsonReturnsTrueWhenAreTheSame(t *testing.T) {
+	old := "{\"a\":{\"c\": []}, \"b\": true}"
+	new := "{\"a\":{\"c\": []}, \"b\": true}"
+
+	assert.True(t, jsonEqual(old, new))
+}
