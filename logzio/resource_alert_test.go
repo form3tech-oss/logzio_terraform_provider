@@ -52,6 +52,29 @@ func TestAccLogzioAlert_UpdateAlert(t *testing.T) {
 	})
 }
 
+func TestAccLogzioAlert_UpdateFilterWhiteSpace(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: resourceCreateAlert("test_update_filter_alert"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"logzio_alert.test_update_alert", "title", "hello"),
+				),
+			},
+			resource.TestStep{
+				Config: resourceUpdateFilterAlert("test_update_filter_alert"),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"logzio_alert.test_update_alert", "filter", "{\"bool\":{\"must\":[],\"filter\":[],\"should\":[],\"must_not\":[]}}"),
+				),
+			},
+		},
+	})
+}
+
 func resourceCreateAlert(name string) string {
 	content, err := ioutil.ReadFile("testdata/fixtures/create_alert.tf")
 	if err != nil {
@@ -62,6 +85,14 @@ func resourceCreateAlert(name string) string {
 
 func resourceUpdateAlert(name string) string {
 	content, err := ioutil.ReadFile("testdata/fixtures/update_alert.tf")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return fmt.Sprintf(fmt.Sprintf("%s", content), name)
+}
+
+func resourceUpdateFilterAlert(name string) string {
+	content, err := ioutil.ReadFile("testdata/fixtures/update_filter_alert.tf")
 	if err != nil {
 		log.Fatal(err)
 	}
