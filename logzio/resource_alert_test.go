@@ -17,7 +17,7 @@ func TestAccLogzioAlert_CreateAlert(t *testing.T) {
 		Providers:    testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: resourceCreateAlert(alertName),
+				Config: resourceCreateAlert("create_alert.tf", alertName),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "title", "hello"),
 					resource.TestCheckResourceAttr(resourceName, "severity_threshold_tiers.#", "1"),
@@ -29,13 +29,41 @@ func TestAccLogzioAlert_CreateAlert(t *testing.T) {
 	})
 }
 
+func TestAccLogzioAlert_CreateAlertMultiple(t *testing.T) {
+	alertName := "test_create_alert"
+
+	var checks []resource.TestCheckFunc
+	for i := 0; i<10; i++ {
+		resourceName := fmt.Sprintf("logzio_alert.%s.%d", alertName, i)
+
+		checks = append(
+			checks,
+			resource.TestCheckResourceAttr(resourceName, "title", fmt.Sprintf("hello %d", i)),
+			resource.TestCheckResourceAttr(resourceName, "severity_threshold_tiers.#", "1"),
+			resource.TestCheckResourceAttr(resourceName, "severity_threshold_tiers.0.severity", "HIGH"),
+			resource.TestCheckResourceAttr(resourceName, "severity_threshold_tiers.0.threshold", "10"),
+		)
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:     func() { testAccPreCheck(t) },
+		Providers:    testAccProviders,
+		Steps: []resource.TestStep{
+			resource.TestStep{
+				Config: resourceCreateAlert("create_alert_multiple.tf", alertName),
+				Check: resource.ComposeTestCheckFunc(checks...),
+			},
+		},
+	})
+}
+
 func TestAccLogzioAlert_UpdateAlert(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:     func() { testAccPreCheck(t) },
 		Providers:    testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: resourceCreateAlert("test_update_alert"),
+				Config: resourceCreateAlert("create_alert.tf", "test_update_alert"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"logzio_alert.test_update_alert", "title", "hello"),
@@ -58,7 +86,7 @@ func TestAccLogzioAlert_UpdateFilterWithOrderingDifference(t *testing.T) {
 		Providers:    testAccProviders,
 		Steps: []resource.TestStep{
 			resource.TestStep{
-				Config: resourceCreateAlert("test_update_filter_alert"),
+				Config: resourceCreateAlert("create_alert.tf", "test_update_filter_alert"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
 						"logzio_alert.test_update_filter_alert", "filter", "{\"bool\":{\"must\":[],\"should\":[],\"filter\":[],\"must_not\":[]}}"),
@@ -75,8 +103,8 @@ func TestAccLogzioAlert_UpdateFilterWithOrderingDifference(t *testing.T) {
 	})
 }
 
-func resourceCreateAlert(name string) string {
-	content, err := ioutil.ReadFile("testdata/fixtures/create_alert.tf")
+func resourceCreateAlert(fixtureFile, name string) string {
+	content, err := ioutil.ReadFile(fmt.Sprintf("testdata/fixtures/%s", fixtureFile))
 	if err != nil {
 		log.Fatal(err)
 	}
