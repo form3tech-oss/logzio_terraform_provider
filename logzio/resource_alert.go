@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/avast/retry-go"
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/jonboydell/logzio_client/alerts"
 	"log"
 	"strconv"
+	"strings"
+	"time"
 )
 
 const (
@@ -208,8 +211,6 @@ func resourceAlertCreate(d *schema.ResourceData, m interface{}) error {
 	_, g := d.GetOk(alert_group_by_aggregation_fields)
 	if g {
 		createAlert.GroupByAggregationFields = d.Get(alert_group_by_aggregation_fields).([]interface{})
-	} else {
-		createAlert.GroupByAggregationFields = make([]interface{}, 0)
 	}
 
 	jsonBytes, err := json.Marshal(createAlert)
@@ -246,10 +247,20 @@ func resourceAlertRead(d *schema.ResourceData, m interface{}) error {
 
 	var alert *alerts.AlertType
 	var err error
-	alert, err = client.GetAlert(alertId)
+	err = retry.Do(func() error {
+			alert, err = client.GetAlert(alertId)
+			return err
+		},
+		retry.RetryIf(func(err error) bool {
+			return strings.Contains(err.Error(), "failed with status code 404")
+		}),
+		retry.Delay(500 * time.Millisecond),
+		retry.Attempts(5),
+	)
 	if err != nil {
 		return err
 	}
+
 	d.Set(alertNotificationEndpoints, alert.AlertNotificationEndpoints)
 	d.Set(alertCreatedAt, alert.CreatedAt)
 	d.Set(alertCreatedBy, alert.CreatedBy)
