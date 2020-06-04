@@ -4,11 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
-	"strconv"
-
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/jonboydell/logzio_client/alerts"
+	"log"
+	"strconv"
 )
 
 const (
@@ -67,6 +66,9 @@ func resourceAlert() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "{\"bool\":{\"must\":[], \"must_not\":[]}}",
+				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
+					return jsonEqual(old, new)
+				},
 			},
 			alert_group_by_aggregation_fields: {
 				Type:     schema.TypeList,
